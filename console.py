@@ -1,7 +1,8 @@
-
+#!/usr/bin/python3
 """ Console Module """
 import cmd
 import sys
+import re
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -113,7 +114,7 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
- def do_create(self, line):
+    def do_create(self, line):
         """Creates a new instance of BaseModel, saves it
         Exceptions:
             SyntaxError: when there is no args given
@@ -124,7 +125,7 @@ class HBNBCommand(cmd.Cmd):
         else:
             my_list = line.split(" ")
             classname = my_list[0]
-            if classname not in storage.classes():
+            if classname not in type(self).classes.keys():
                 print("** class doesn't exist **")
                 return
             obj = eval("{}()".format(classname))
