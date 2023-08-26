@@ -1,11 +1,10 @@
---CREATE databae if it does not exist
-CREATE DATABASE IF NOT EXISTS hbtn_test_db;
-
---CREATE user if it does not exists
-CREATE USER IF NOT EXISTS 'hbtn_user'@'localhost' IDENTIFIED WITH 'hbnb_test_pwd';
-
---GRANT ALL priviledges on the db  to the created user
-GRANT ALL ON hbtn_test_db.* TO 'hbtn_user'@'localhost';
-
---GRANT select priviledge to read from perfomance scema
-GRANT SELECT ON performance_schema.* TO 'hbtn_test'@'localhost';
+-- prepares a MySQL test server for the AirBnb clone
+-- creates a database
+CREATE DATABASE IF NOT EXISTS hbnb_test_db;
+-- create a user and grant privileges
+GRANT ALL ON hbnb_test_db.*
+TO 'hbnb_test'@'localhost'
+IDENTIFIED BY 'hbnb_test_pwd';
+-- grant SELECT privileges
+GRANT SELECT ON performance_schema.*
+TO 'hbnb_test'@'localhost';
