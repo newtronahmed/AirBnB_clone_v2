@@ -62,7 +62,7 @@ class Place(BaseModel, Base):
         @property
         def reviews(self):
             """Getter attribute in case of file storage"""
-             return [review for review in models.storage.all(Review)
+            return [review for review in models.storage.all(Review)
                      if review.place_id == self.id]
 
         @property
