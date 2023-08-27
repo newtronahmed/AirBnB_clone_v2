@@ -28,8 +28,8 @@ class DBStorage():
                                               getenv('HBNB_MYSQL_HOST'),
                                               getenv('HBNB_MYSQL_DB')),
                                       pool_pre_ping=True)
-    if getenv('HBNB_ENV') == 'test':
-        Base.metadata.drop_all(bind=self.__engine)
+        if getenv('HBNB_ENV') == 'test':
+            Base.metadata.drop_all(bind=self.__engine)
 
     def all(self, cls=None):
         """Returns dictionary with all objects depending
@@ -68,12 +68,6 @@ class DBStorage():
     def reload(self):
         """Create the current database session (self.__session) from
         the engine (self.__engine) by using a sessionmaker"""
-        from models.user import User
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.place import Place
-        from models.review import Review
 
         Base.metadata.create_all(self.__engine)
         self.__session = sessionmaker(bind=self.__engine,
