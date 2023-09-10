@@ -1,69 +1,69 @@
 #!/usr/bin/python3
-"""A fabric configuration module to manage static web deployment
-
-This module contain
-    function:
-    do_pack: that bundles and compresses all content of the
-            web_static to  version folder
-    do_deploy: that takes a parameter 'archive_path' which is the
-            location of the archive file
+"""Compress web static package
 """
-import os
-import fabric.api as api
+from fabric.api import *
 from datetime import datetime
-from pathlib import Path
+import os
 
-api.env.hosts = ['100.26.220.252', '54.209.204.18']
 
-api.env.user = "ubuntu"
-
-def do_pack():
-    """Bundles convert the contents of web_static directory to tgz
-    """
-    version_dir = Path('./versions')
-    if not version_dir.exists():
-        os.mkdir(version_dir)
-    now = datetime.now()
-
-    # absolute path to the compressed file
-    file_name = version_dir / "web_static_{}{}{}{}{}{}.tgz".format(
-            now.year, now.month, now.day,
-            now.hour, now.minute, now.second)
-    try:
-        api.local(f"tar -zcvf {file_name.absolute()} -C web_static .")
-        return str(file_name.absolute())
-    except Exception:
-        return None
+env.hosts = ['100.26.220.252', '54.209.204.18']
+env.user = 'ubuntu'
 
 
 def do_deploy(archive_path):
-    """Deploys archive path to production
-    """
-    if not Path(archive_path).exists():
-        return False
-    try:
-        file_name = archive_path.split('/')[-1]
-        file_name_no_ext = file_name.split('.')[0]
-        old_path = '/data/web_static/releases/{}/web_static'.format(
-                file_name_no_ext)
-        new_path = '/data/web_static/releases/{}'.format(
-                file_name_no_ext)
-        curr_path = '/data/web_static/current'
+        """Deploy web files to server
+        """
+        try:
+                if not (os.path.exists(archive_path)):
+	                return False
 
-        run_locally = os.getenv("run_locally", None)
-        if run_locally is None:
-            api.local(f'mkdir -p {new_path}')
-            api.local(f'tar -zxf {archive_path} -C {new_path}')
-            api.local(f'rm -rfR {curr_path}')
-            api.local(f'ln -s {new_path} {curr_path}')
-            os.environ['run_locally'] = "True"
+                timestamp = archive_path[-18:-4]
+                if os.getenv("run_local", None) is None:
+                        local('sudo mkdir -p /data/web_static/\
+releases/web_static_{}/'.format(timestamp))
+			
+                        local('sudo tar -xzf {} -C \
+/data/web_static/releases/web_static_{}/'.format(archive_path, timestamp))
 
-        api.put(archive_path, '/tmp/')
-        api.run(f'mkdir -p {new_path}')
-        api.run(f'tar -zxf /tmp/{file_name} -C {new_path}')
-        api.run(f'rm /tmp/{file_name}')
-        api.run(f'rm -rfR {curr_path}')
-        api.run(f'ln -s {new_path} {curr_path}')
+                        local('sudo rm -rf /data/web_static/current')
+
+                        local('sudo ln -s /data/web_static/releases/\
+web_static_{}/ /data/web_static/current'.format(timestamp))
+
+                        os.environ["run_local"] = "True"			
+                        print("run lpcal")
+                # upload archive
+                put(archive_path, '/tmp/')
+
+                # create target dir
+                run('sudo mkdir -p /data/web_static/\
+releases/web_static_{}/'.format(timestamp))
+
+                # uncompress archive and delete .tgz
+                run('sudo tar -xzf /tmp/web_static_{}.tgz -C \
+/data/web_static/releases/web_static_{}/'
+                    .format(timestamp, timestamp))
+
+                # remove archive
+                run('sudo rm /tmp/web_static_{}.tgz'.format(timestamp))
+
+                # move contents into host web_static
+                run('sudo mv /data/web_static/releases/web_static_{}/web_static/* \
+/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
+
+                # remove extraneous web_static dir
+                run('sudo rm -rf /data/web_static/releases/\
+web_static_{}/web_static'
+                    .format(timestamp))
+
+                # delete pre-existing sym link
+                run('sudo rm -rf /data/web_static/current')
+
+                # re-establish symbolic link
+                run('sudo ln -s /data/web_static/releases/\
+web_static_{}/ /data/web_static/current'.format(timestamp))
+        except:
+                return False
+
+        # return True on success
         return True
-    except Exception:
-        return False
