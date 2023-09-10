@@ -15,6 +15,7 @@ from pathlib import Path
 
 api.env.hosts = ['100.26.220.252', '54.209.204.18']
 
+api.env.user = "ubuntu"
 
 def do_pack():
     """Bundles convert the contents of web_static directory to tgz
