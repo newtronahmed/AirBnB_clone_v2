@@ -30,8 +30,12 @@ releases/web_static_{}/'.format(timestamp))
                         local('sudo ln -s /data/web_static/releases/\
 web_static_{}/ /data/web_static/current'.format(timestamp))
 
+                        local('sudo mv /data/web_static/releases/web_static_{}/web_static/* \
+/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
+                        local('sudo rm -rf /data/web_static/releases/\
+web_static_{}/web_static'
+                    .format(timestamp))
                         os.environ["run_local"] = "True"			
-                        print("run lpcal")
                 # upload archive
                 put(archive_path, '/tmp/')
 
