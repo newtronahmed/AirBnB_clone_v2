@@ -13,7 +13,7 @@ import fabric.api as api
 from datetime import datetime
 from pathlib import Path
 
-api.env.hosts = ['54.157.170.157', '100.25.181.11']
+api.env.hosts = ['100.26.220.252', '54.209.204.18']
 
 
 def do_pack():
