@@ -6,7 +6,7 @@ from fabric.contrib import files
 import os
 
 
-api.env.hosts = ['100.26.220.252', '54.209.204.18']
+api.env.hosts = ['100.26.220.252', '54.209.204.18', '127.0.0.1']
 api.env.user = 'ubuntu'
 api.env.key_filename = '~/.ssh/id_rsa'
 
