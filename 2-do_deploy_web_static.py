@@ -1,41 +1,68 @@
 #!/usr/bin/python3
-"""Deploy an archive of static html to my web servers with Fabric3"""
+"""A fabric configuration module to manage static web deployment
 
-from fabric import api
-from fabric.contrib import files
+This module contain
+    function:
+    do_pack: that bundles and compresses all content of the
+            web_static to  version folder
+    do_deploy: that takes a parameter 'archive_path' which is the
+            location of the archive file
+"""
 import os
+import fabric.api as api
+from datetime import datetime
+from pathlib import Path
+
+api.env.hosts = ['54.157.170.157', '100.25.181.11']
 
 
-api.env.hosts = ['100.26.220.252', '54.209.204.18', '127.0.0.1']
-api.env.user = 'ubuntu'
-api.env.key_filename = '~/.ssh/id_rsa'
+def do_pack():
+    """Bundles convert the contents of web_static directory to tgz
+    """
+    version_dir = Path('./versions')
+    if not version_dir.exists():
+        os.mkdir(version_dir)
+    now = datetime.now()
+
+    # absolute path to the compressed file
+    file_name = version_dir / "web_static_{}{}{}{}{}{}.tgz".format(
+            now.year, now.month, now.day,
+            now.hour, now.minute, now.second)
+    try:
+        api.local(f"tar -zcvf {file_name.absolute()} -C web_static .")
+        return str(file_name.absolute())
+    except Exception:
+        return None
 
 
 def do_deploy(archive_path):
-    """Function to transfer `archive_path` to web servers.
-    Args:
-        archive_path (str): path of the .tgz file to transfer
-    Returns: True on success, False otherwise.
+    """Deploys archive path to production
     """
-    if not os.path.isfile(archive_path):
+    if not Path(archive_path).exists():
         return False
-    with api.cd('/tmp'):
-        basename = os.path.basename(archive_path)
-        root, ext = os.path.splitext(basename)
-        outpath = '/data/web_static/releases/{}'.format(root)
-        try:
-            putpath = api.put(archive_path)
-            if files.exists(outpath):
-                api.run('rm -rdf {}'.format(outpath))
-            api.run('mkdir -p {}'.format(outpath))
-            api.run('tar -xzf {} -C {}'.format(putpath[0], outpath))
-            api.run('rm -f {}'.format(putpath[0]))
-            api.run('mv -u {}/web_static/* {}'.format(outpath, outpath))
-            api.run('rm -rf {}/web_static'.format(outpath))
-            api.run('rm -rf /data/web_static/current')
-            api.run('ln -sf {} /data/web_static/current'.format(outpath))
-            print('New version deployed!')
-        except:
-            return False
-        else:
-            return True
+    try:
+        file_name = archive_path.split('/')[-1]
+        file_name_no_ext = file_name.split('.')[0]
+        old_path = '/data/web_static/releases/{}/web_static'.format(
+                file_name_no_ext)
+        new_path = '/data/web_static/releases/{}'.format(
+                file_name_no_ext)
+        curr_path = '/data/web_static/current'
+
+        run_locally = os.getenv("run_locally", None)
+        if run_locally is None:
+            api.local(f'mkdir -p {new_path}')
+            api.local(f'tar -zxf {archive_path} -C {new_path}')
+            api.local(f'rm -rfR {curr_path}')
+            api.local(f'ln -s {new_path} {curr_path}')
+            os.environ['run_locally'] = "True"
+
+        api.put(archive_path, '/tmp/')
+        api.run(f'mkdir -p {new_path}')
+        api.run(f'tar -zxf /tmp/{file_name} -C {new_path}')
+        api.run(f'rm /tmp/{file_name}')
+        api.run(f'rm -rfR {curr_path}')
+        api.run(f'ln -s {new_path} {curr_path}')
+        return True
+    except Exception:
+        return False
