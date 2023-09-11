@@ -4,10 +4,29 @@
 from fabric.api import *
 from datetime import datetime
 import os
+from pathlib import Path
 
 
 env.hosts = ['100.26.220.252', '54.209.204.18']
 env.user = 'ubuntu'
+def do_pack():
+    """Bundles convert the contents of web_static directory to tgz
+    """
+    version_dir = Path('./versions')
+    if not version_dir.exists():
+        os.mkdir(version_dir)
+    now = datetime.now()
+
+    # absolute path to the compressed file
+    file_name = version_dir / "web_static_{}{}{}{}{}{}.tgz".format(
+            now.year, now.month, now.day,
+            now.hour, now.minute, now.second)
+    try:
+        local("tar -zcvf {} -C web_static .".format(file_name.absolute()))
+        return str(file_name.absolute())
+    except Exception:
+        return None
+
 
 
 def do_deploy(archive_path):
