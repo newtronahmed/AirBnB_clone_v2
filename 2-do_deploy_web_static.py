@@ -17,14 +17,13 @@ def do_deploy(archive_path):
                 if not (os.path.exists(archive_path)):
                         return False
 
-                timestamp = archive_path[-18:-4]
+                timestamp = archive_path[-17:-4]
                 if os.getenv("run_local", None) is None:
                         os.environ["run_local"] = "True"
                         local('sudo mkdir -p /data/web_static/\
 releases/web_static_{}/'.format(timestamp))
 
-                        local('sudo tar -xzf {} -C \
-/data/web_static/releases/web_static_{}'.format(archive_path, timestamp))
+                        local('sudo tar -zxf {} -C /data/web_static/releases/web_static_{}'.format(archive_path, timestamp))
 
                         #local('sudo mv -f /data/web_static/releases/web_static_{}/web_static/* \
 #/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
@@ -33,7 +32,7 @@ releases/web_static_{}/'.format(timestamp))
                     #.format(timestamp))
 
                         local('sudo rm -rfR /data/web_static/current')
-                        local('sudo ln -s /data/web_static/releases/web_static_{}/\  /data/web_static/current'.format(timestamp))
+                        local('sudo ln -s /data/web_static/releases/web_static_{}/ /data/web_static/current'.format(timestamp))
                 # upload archive
                 put(archive_path, '/tmp/')
 
@@ -50,13 +49,13 @@ releases/web_static_{}/'.format(timestamp))
                 run('sudo rm /tmp/web_static_{}.tgz'.format(timestamp))
 
                 # move contents into host web_static
-                run('sudo mv -f /data/web_static/releases/web_static_{}/web_static/* \
-/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
+                #run('sudo mv -f /data/web_static/releases/web_static_{}/web_static/* \
+#/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
 
                 # remove extraneous web_static dir
-                run('sudo rm -rf /data/web_static/releases/\
-web_static_{}/web_static'
-                    .format(timestamp))
+                #run('sudo rm -rf /data/web_static/releases/\
+#web_static_{}/web_static'
+                   # .format(timestamp))
 
                 # delete pre-existing sym link
                 run('sudo rm -rf /data/web_static/current')
