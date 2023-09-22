@@ -30,7 +30,7 @@ def python(text="is cool"):
 def number(n):
 	"""display is a number only if n is an integer"""
 	if type(n) == int:
-		return "{} is as number".format(n)
+		return "{} is a number".format(n)
 
 if __name__ == "__main__":
 	app.run("0.0.0.0", port=5000)
