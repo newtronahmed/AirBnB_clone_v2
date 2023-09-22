@@ -27,14 +27,14 @@ def python(text="is cool"):
 	text = text.replace("_", " ")
 	return "Python {}".format(text)
 
-@app.route("/number/<n>", strict_slashes=False)
+@app.route("/number/<int:n>", strict_slashes=False)
 def number(n):
 	"""display is a number only if n is an integer"""
 	if type(n) == int:
 		return "{} is as number".format(n)
 
 
-@app.route("/number_template/<n>", strict_slashes=False)
+@app.route("/number_template/<int:n>", strict_slashes=False)
 def number_template(n):
 	"""display a HTML page only if n is an integer"""
 	if type(n) == int:
