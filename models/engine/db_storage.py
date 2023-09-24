@@ -34,8 +34,12 @@ class DBStorage():
     def all(self, cls=None):
         """Returns dictionary with all objects depending
         of the class name (argument cls)"""
-        if cls:
+        if not self.__session:
+      	    self.reload()
+        if type(cls) == str:
             objs = self.__session.query(self.classes()[cls])
+        if cls:
+            objs = self.__session.query(cls).all()
         else:
             objs = self.__session.query(State).all()
             objs += self.__session.query(City).all()
@@ -44,11 +48,11 @@ class DBStorage():
             objs += self.__session.query(Amenity).all()
             objs += self.__session.query(Review).all()
 
-            dic = {}
-            for obj in objs:
-                k = '{}.{}'.format(type(obj).__name__, obj.id)
-                dic[k] = obj
-                return dic
+        dic = {}
+        for obj in objs:
+            k = '{}.{}'.format(type(obj).__name__, obj.id)
+            dic[k] = obj
+        return dic
 
     def new(self, obj):
         """Add the object to the current
