@@ -37,9 +37,6 @@ class DBStorage():
         if not self.__session:
       	    self.reload()
         if type(cls) == str:
-            print("class {} ".format(cls))
-            print("classes {}".format(self.classes()))
-            print("class {}".format(self.classes()[cls]))
             cls  = self.classes().get(cls)
         if cls:
             objs = self.__session.query(cls).all()
